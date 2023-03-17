@@ -12,14 +12,26 @@ param supportsHttpsTrafficOnly bool = true
 
 @description('The language worker runtime to load in the function app')
 @allowed([
-  'node'
   'dotnet'
+  'dotnet-isolated'
   'java'
+  'node'
+  'powershell'
+  'python'
 ])
-param runtime string = 'dotnet'
+param runtime string = 'dotnet-isolated'
 
 @description('Tags to apply to environment resources')
 param tags object = {}
+
+var linexFxVersions = {
+  dotnet: 'DOTNET|6.0'
+  'dotnet-isolated': 'DOTNET-ISOLATED|7.0'
+  java: 'JAVA|17'
+  node: 'NODE|18'
+  powershell: 'POWERSHELL|7.2'
+  python: 'PYTHON|3.10'
+}
 
 var resourceName = !empty(name) ? replace(name, ' ', '-') : 'a${uniqueString(resourceGroup().id)}'
 
@@ -69,11 +81,8 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: hostingPlan.id
     httpsOnly: supportsHttpsTrafficOnly
     siteConfig: {
+      linuxFxVersion: linexFxVersions[runtime]
       appSettings: [
-        // {
-        //   name: 'AzureWebJobsDashboard'
-        //   value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
-        // }
         {
           name: 'AzureWebJobsStorage'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value}'
