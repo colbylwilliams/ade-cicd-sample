@@ -2,8 +2,8 @@ name: Update Environment
 
 on:
   push:
-  # paths:
-  #   - 'ADE.Tutorial/**'
+    paths:
+      - 'ADE.Tutorial/**'
   pull_request:
     types: [synchronize]
     paths:
