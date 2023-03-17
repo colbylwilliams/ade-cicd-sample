@@ -57,7 +57,11 @@ jobs:
               'AZURE_SUBSCRIPTION_ID': 'your Azure subscription Id (GUID)'
           }
 
-          variables = ${{ toJson( vars ) }}
+          try:
+              variables = ${{ toJson( vars ) }}
+          except NameError:
+              print(f'::error title=Missing required repository variables::Please see README.md for required variables.')
+              exit(1)
 
           for k, v in required_vars.items():
               if k not in variables:
