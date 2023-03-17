@@ -51,6 +51,8 @@ jobs:
           required_vars = {
               'AZURE_PROJECT': 'the name of your dev center project',
               'AZURE_DEVCENTER': 'the name of your dev center',
+              'AZURE_CATALOG': 'a value of: Environments',
+              'AZURE_CATALOG_ITEM': 'a value of: FunctionApp',
               'AZURE_TENANT_ID': 'your Azure tenant Id (GUID)',
               'AZURE_SUBSCRIPTION_ID': 'your Azure subscription Id (GUID)'
           }
