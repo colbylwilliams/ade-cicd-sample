@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 @description('Name of the Function App')
-param name string = ''
+param name string
 
 @description('Location to deploy the environment resources')
 param location string = resourceGroup().location
@@ -33,15 +33,13 @@ var linexFxVersions = {
   python: 'PYTHON|3.10'
 }
 
-var resourceName = !empty(name) ? replace(name, ' ', '-') : 'a${uniqueString(resourceGroup().id)}'
-
 // storage account names can be no longer than 24 chars,
 // so if the provided name is logner, assume we trimmed it elsewhere
-var storageAcctName = take(toLower(replace(replace(resourceName, '-', ''), '_', '')), 24)
+var storageAcctName = take(toLower(replace(replace(replace(name, ' ', ''), '-', ''), '_', '')), 24)
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   kind: 'web'
-  name: resourceName
+  name: name
   location: location
   properties: {
     Application_Type: 'web'
@@ -50,7 +48,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: resourceName
+  name: name
   location: location
   kind: 'functionapp,linux'
   sku: {
@@ -78,7 +76,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
 
 resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   kind: 'functionapp,linux'
-  name: resourceName
+  name: name
   location: location
   identity: {
     type: 'SystemAssigned'
