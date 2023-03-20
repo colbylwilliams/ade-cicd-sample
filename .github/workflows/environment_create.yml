@@ -14,12 +14,12 @@ concurrency: ${{ github.event.number || github.ref_name }}
 jobs:
   config:
     if: github.event_name == 'pull_request' || github.event.ref_type == 'branch'
-    name: Get Environment
+    name: Get Configuration
     uses: ./.github/workflows/environment_config.yml
 
   create_env:
     if: github.event_name == 'pull_request' || github.event.ref_type == 'branch'
-    name: Create Environment
+    name: Create ${{ needs.config.outputs.type }} Environment
     runs-on: ubuntu-latest
 
     needs: config
@@ -53,22 +53,23 @@ jobs:
               --catalog-name ${{ vars.AZURE_CATALOG }} --catalog-item-name ${{ vars.AZURE_CATALOG_ITEM }} \
               --parameters '{ "name": "${{ env.ENVIRONMENT_NAME }}" }' --only-show-errors
 
-      - name: Get Environment Resource Group
+      - name: Get Resource Group
+        shell: bash {0}
         run: |
           environment_rg=$(az devcenter dev environment show --name ${{ env.ENVIRONMENT_NAME }} \
               --dev-center ${{ vars.AZURE_DEVCENTER }} --project ${{ vars.AZURE_PROJECT }} \
               --only-show-errors --query resourceGroupId --output tsv 2>&1)
 
-          if [ $? -eq 0 ]; then
-              environment_group=${environment_rg##*/}
-              environment_sub=${environment_rg%/resourceGroups*}
-              environment_sub=${environment_sub##*/}
-
-              echo "ENVIRONMENT_GROUP=$environment_group" >> $GITHUB_ENV
-              echo "ENVIRONMENT_SUB=$environment_sub" >> $GITHUB_ENV
-          else
+          if [ $? -ne 0 ]; then
               echo "::error::az devcenter dev environment show command failed: $environment_rg"; exit 1
           fi
+
+          environment_group=${environment_rg##*/}
+          environment_sub=${environment_rg%/resourceGroups*}
+          environment_sub=${environment_sub##*/}
+
+          echo "ENVIRONMENT_GROUP=$environment_group" >> $GITHUB_ENV
+          echo "ENVIRONMENT_SUB=$environment_sub" >> $GITHUB_ENV
 
       - name: Deploy ADE.Tutorial
         run: |
