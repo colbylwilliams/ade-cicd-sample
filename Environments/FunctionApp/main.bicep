@@ -35,7 +35,9 @@ var linexFxVersions = {
 
 var resourceName = !empty(name) ? replace(name, ' ', '-') : 'a${uniqueString(resourceGroup().id)}'
 
-var storageAcctName = toLower(replace(resourceName, '-', ''))
+// storage account names can be no longer than 24 chars,
+// so if the provided name is logner, assume we trimmed it elsewhere
+var storageAcctName = take(toLower(replace(replace(resourceName, '-', ''), '_', '')), 24)
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   kind: 'web'
